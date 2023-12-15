@@ -1,34 +1,58 @@
 import { url } from "../helpers/contants.js";
 import { GetData } from "../helpers/peticiones.js";
+import { NoView, ViewMovie } from "./ViewMovie.js";
 
 
-const template = document.getElementById("template").content;
-const container = document.getElementById("ContainerCards");
+let btnTodas = document.getElementById('btnTodas');
+let btnMas = document.getElementById('btnMas');
+let btnMenos = document.getElementById('btnMenos');
 
-document.addEventListener("DOMContentLoaded", /*le indico que es una promesa*/
-    async () => {
+let form = document.querySelector('form');
+let search = document.getElementById('search');
+
+//-----------Carga Principal--------//
+
+document.addEventListener("DOMContentLoaded", async () => {
+    btnTodas.addEventListener('click', async () => {
         const response = await GetData(url);
-
-        console.log("La url", response)
-        /*necesito que falle o funcione la promesa*/
-
-
-        let fragment = document.createDocumentFragment()
-
-        //--------pintar las card---------//
-        response.forEach(item => {
-            console.log(item)
-            const { id, Carrusel, Description, Poster, Title, Trailer, Type, Value, Year } = item
-
-
-            template.querySelector('img').setAttribute('src', Poster);
-            template.querySelector('img').setAttribute('alt', Type);
-            const clone = template.cloneNode(true)
-            fragment.appendChild(clone)
-
-
-
-        });
-
-        container.appendChild(fragment)
+        ViewMovie(response)
     });
+    btnMas.addEventListener('click', async () => {
+        const response = await GetData(url);
+        const respMas = await response.filter((fi) => fi.Value >= 8);
+        ViewMovie(respMas)
+    });
+    btnMenos.addEventListener('click', async () => {
+        const response = await GetData(url);
+        const respMenos = await response.filter((fi) => fi.Value < 8)
+        ViewMovie(respMenos)
+    });
+
+
+
+});
+
+
+
+
+//-----------Busqueda del NavBar--------//
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault()
+    console.log("A buscar:", search.value)
+    const response = await GetData(url);
+    const respSearch = await response.filter((fi) =>
+        fi.Title.toLocaleLowerCase().includes(search.value.toLocaleLowerCase())
+    );
+
+    console.log(respSearch)
+    if (respSearch.length > 0) {
+        ViewMovie(respSearch)
+    } else {
+        NoView(search.value)
+    }
+
+
+
+
+})
